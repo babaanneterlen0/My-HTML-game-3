@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ULTIMATE METEOR: APOCALYPSE</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #000;
+            margin: 0 auto;
+            touch-action: none;
+        }
+
+        #menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at center, rgba(80,0,0,0.9) 0%, rgba(0,0,0,0.95) 100%);
+            z-index: 100;
+            color: white;
+            text-align: center;
+            touch-action: pan-y;
+        }
+
+        .menu-title {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            color: #ff4444;
+            text-shadow: 0 0 25px #ff0000, 0 0 35px #ff0000, 0 0 45px #ff0000;
+            background: linear-gradient(45deg, #ff4444, #ff0000, #ff4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 0 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #ff6666;
+            text-shadow: 0 0 15px #ff4444;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            margin: 0.6rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            min-width: 200px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            touch-action: manipulation;
+            z-index: 60;
+        }
+
+        .control-btn {
+            background: rgba(255, 0, 0, 0.3);
+            color: white;
+            border: none;
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            border: 2px solid rgba(255, 0, 0, 0.6);
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .control-btn:active {
+            transform: scale(0.85);
+            background: rgba(255, 0, 0, 0.6);
+        }
+
+        #shootBtn {
+            background: rgba(255, 100, 0, 0.4);
+            border-color: rgba(255, 100, 0, 0.8);
+        }
+
+        #pauseBtn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            z-index: 50;
+            display: none;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        #gameInfo {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            color: white;
+            font-size: 1.3rem;
+            z-index: 50;
+        }
+
+        #lives, #scoreDisplay, #goldDisplay, #powerDisplay {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            border: 2px solid #ff4444;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .mode-btn {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            min-width: 90px;
+            touch-action: manipulation;
+        }
+
+        .mode-btn.active {
+            background: #ff4444;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            font-weight: bold;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+
+        #mode-container {
+            display: flex;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            gap: 0.3rem;
+        }
+
+        #language-btn {
+            background: transparent;
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            margin-top: 0.5rem;
+        }
+
+        /* MODE SELECTION */
+        .mode-btn.easy {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+        .mode-btn.easy.active {
+            background: #00ff00;
+            color: black;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+        }
+
+        .mode-btn.normal {
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+        .mode-btn.normal.active {
+            background: #ffff00;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.7);
+        }
+
+        .mode-btn.hard {
+            border-color: #ffaa00;
+            color: #ffaa00;
+        }
+        .mode-btn.hard.active {
+            background: #ffaa00;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.7);
+        }
+
+        .mode-btn.extreme {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+        .mode-btn.extreme.active {
+            background: #ff4444;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.7);
+        }
+
+        .mode-btn.impossible {
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+        .mode-btn.impossible.active {
+            background: #ff00ff;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.7);
+        }
+
+        /* SHOP STYLES */
+        #shopMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            overflow-y: auto;
+            padding: 1rem;
+            touch-action: pan-y;
+        }
+
+        .shop-header {
+            position: sticky;
+            top: 0;
+            background: rgba(0,0,0,0.9);
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #ff4444;
+            z-index: 201;
+        }
+
+        .shop-content {
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem;
+        }
+
+        .shop-item {
+            background: rgba(255,0,0,0.1);
+            border: 2px solid #ff4444;
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .shop-item:active {
+            transform: scale(0.95);
+            background: rgba(255,0,0,0.2);
+        }
+
+        .shop-item.unlocked {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.1);
+        }
+
+        .shop-item.equipped {
+            border-color: #ffff00;
+            background: rgba(255,255,0,0.1);
+        }
+
+        .price-tag {
+            color: #ff4444;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255,0,0,0.7);
+            color: white;
+            border: none;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            z-index: 202;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .shop-buttons {
+            position: sticky;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            border-top: 2px solid #ff4444;
+        }
+
+        #menuGoldDisplay {
+            background: rgba(255,0,0,0.2);
+            border: 2px solid #ff4444;
+            border-radius: 20px;
+            padding: 0.6rem 1.2rem;
+            margin: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ff4444;
+        }
+
+        .mode-description {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-top: 0.2rem;
+            color: #ff6666;
+        }
+
+        /* YENİ EKLENEN STİLLER */
+        .skin-preview {
+            width: 80px;
+            height: 60px;
+            margin: 0.5rem auto;
+            position: relative;
+        }
+
+        .boss-health-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 20px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #ff4444;
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 40;
+        }
+
+        .boss-health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ffff00);
+            transition: width 0.3s;
+        }
+
+        .boss-name {
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px #000;
+            z-index: 40;
+        }
+
+        .bonus-popup {
+            position: absolute;
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px #00ff00;
+            z-index: 45;
+            animation: floatUp 1.5s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <button id="pauseBtn">⏸</button>
+    
+    <div id="gameInfo">
+        <div id="lives">❤️❤️❤️</div>
+        <div id="scoreDisplay">⭐ Skor: 0</div>
+        <div id="goldDisplay">💰 Altın: 0</div>
+        <div id="powerDisplay">⚡ Güçler: </div>
+    </div>
+
+    <!-- Boss Health Bar -->
+    <div id="bossHealthBar" class="boss-health-bar" style="display: none;">
+        <div class="boss-health-fill" style="width: 100%;"></div>
+    </div>
+    <div id="bossName" class="boss-name" style="display: none;"></div>
+    
+    <div id="menu">
+        <h1 class="menu-title">ULTIMATE METEOR</h1>
+        <div class="subtitle">APOCALYPSE</div>
+        
+        <!-- TÜM OYUN MODLARI -->
+        <div id="mode-container">
+            <button class="mode-btn easy active" id="easyMode">KOLAY</button>
+            <button class="mode-btn normal" id="normalMode">NORMAL</button>
+            <button class="mode-btn hard" id="hardMode">ZOR</button>
+            <button class="mode-btn extreme" id="extremeMode">EKSTREM</button>
+            <button class="mode-btn impossible" id="impossibleMode">İMKANSIZ</button>
+        </div>
+        
+        <div id="modeDescription" class="mode-description">
+            Kolay: Yeni başlayanlar için ideal
+        </div>
+        
+        <!-- ANA MENÜDE ALTIN -->
+        <div id="menuGoldDisplay">💰 Altın: 0</div>
+        
+        <button class="btn" id="startBtn">🚀 OYUNU BAŞLAT</button>
+        <button class="btn" id="shopBtn">🛒 GALAKTİK MAĞAZA</button>
+        <button class="btn" id="language-btn">🌐 DİL: TÜRKÇE</button>
+    </div>
+
+    <!-- MAĞAZA MENÜSÜ -->
+    <div id="shopMenu">
+        <button class="back-btn" id="shopBackBtn">←</button>
+        
+        <div class="shop-header">
+            <h2>🚀 GALAKTİK MAĞAZA 🌟</h2>
+            <div id="goldDisplayShop">Altın: 0</div>
+        </div>
+        
+        <div class="shop-content">
+            <div id="shopItems">
+                <!-- Shop items will be generated here -->
+            </div>
+        </div>
+        
+        <div class="shop-buttons">
+            <button class="btn" id="backToMenuBtn">MENÜYE DÖN</button>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button class="control-btn" id="leftBtn">←</button>
+        <button class="control-btn" id="shootBtn">🔴</button>
+        <button class="control-btn" id="rightBtn">→</button>
+    </div>
+
+    <script>
+        // ULTIMATE METEOR: APOCALYPSE - GÜNCELLENMİŞ SÜRÜM
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu');
+        const shopMenu = document.getElementById('shopMenu');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const livesDisplay = document.getElementById('lives');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const goldDisplay = document.getElementById('goldDisplay');
+        const powerDisplay = document.getElementById('powerDisplay');
+        const menuGoldDisplay = document.getElementById('menuGoldDisplay');
+        const goldDisplayShop = document.getElementById('goldDisplayShop');
+        const modeDescription = document.getElementById('modeDescription');
+        const bossHealthBar = document.getElementById('bossHealthBar');
+        const bossName = document.getElementById('bossName');
+        
+        // Canvas boyutunu ayarla
+        function resizeCanvas() {
+            const size = Math.min(window.innerWidth, window.innerHeight);
+            canvas.width = size * 0.95;
+            canvas.height = size * 1.3;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Oyun durumu
+        let gameActive = false;
+        let gamePaused = false;
+        let lives = 3;
+        let score = 0;
+        let gold = 0;
+        let language = 'Turkish';
+        let gameMode = 'Easy';
+        let meteorsDestroyed = 0;
+        let bossActive = false;
+        let bossHealth = 0;
+        let bossMaxHealth = 0;
+        let currentBoss = null;
+
+        // YILDIZ SİSTEMİ
+        let stars = [];
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.5 + 0.1,
+                    brightness: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+
+        function updateStars() {
+            stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function drawStars() {
+            stars.forEach(star => {
+                ctx.globalAlpha = star.brightness;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        // YENİ: SKİN DEĞİŞTİRME MEKANİZMASI
+        let shipSkins = {
+            default: { 
+                color: '#ff4444', 
+                name: 'Kırmızı Savaşçı', 
+                unlocked: true,
+                equipped: true,
+                type: 'classic'
+            },
+            premium: { 
+                color: '#FFD700', 
+                name: 'Altın Savaşçı', 
+                price: 35, 
+                unlocked: false,
+                equipped: false,
+                type: 'premium'
+            },
+            fire: { 
+                color: '#FF4500', 
+                name: 'Ateş Gemisi', 
+                price: 35, 
+                unlocked: false,
+                equipped: false,
+                type: 'fire'
+            },
+            ice: { 
+                color: '#00FFFF', 
+                name: 'Buz Koruyucu', 
+                price: 35, 
+                unlocked: false,
+                equipped: false,
+                type: 'ice'
+            },
+            neon: { 
+                color: '#FF00FF', 
+                name: 'Neon Avcı', 
+                price: 35, 
+                unlocked: false,
+                equipped: false,
+                type: 'neon'
+            },
+            ghost: {
+                color: '#888888',
+                name: 'Hayalet Gemi',
+                price: 40,
+                unlocked: false,
+                equipped: false,
+                type: 'ghost'
+            },
+            cosmic: {
+                color: '#8A2BE2',
+                name: 'Kozmik Savaşçı',
+                price: 45,
+                unlocked: false,
+                equipped: false,
+                type: 'cosmic'
+            }
+        };
+
+        let meteorSkins = {
+            default: { 
+                color: '#ff4444', 
+                name: 'Kırmızı Meteor', 
+                unlocked: true,
+                equipped: true
+            },
+            gold: { 
+                color: '#FFD700', 
+                name: 'Altın Meteor', 
+                price: 25, 
+                unlocked: false,
+                equipped: false
+            },
+            crystal: { 
+                color: '#87CEEB', 
+                name: 'Kristal Meteor', 
+                price: 25, 
+                unlocked: false,
+                equipped: false
+            },
+            lava: { 
+                color: '#FF8C00', 
+                name: 'Lav Meteor', 
+                price: 25, 
+                unlocked: false,
+                equipped: false
+            },
+            cosmic: { 
+                color: '#9370DB', 
+                name: 'Kozmik Meteor', 
+                price: 25, 
+                unlocked: false,
+                equipped: false
+            }
+        };
+
+        let currentShipSkin = 'default';
+        let currentMeteorSkin = 'default';
+
+        // YENİ METEOR TÜRLERİ - KIRMIZI
+        const METEOR_TYPES = {
+            NORMAL: { health: 1, color: '#ff4444', points: 10 },
+            LAVA: { health: 2, color: '#ff5500', points: 15, effect: 'explosive' },
+            DARK: { health: 3, color: '#ff0000', points: 20, effect: 'invisible' }
+        };
+
+        // YENİ GÜÇLER
+        let powerUps = {
+            shield: { active: false, duration: 0, maxDuration: 600 },
+            rapidFire: { active: false, duration: 0, maxDuration: 450 },
+            tripleShot: { active: false, duration: 0, maxDuration: 300 },
+            bomb: { active: false, duration: 0, maxDuration: 180 },
+            laser: { active: false, duration: 0, maxDuration: 240 },
+            timeFreeze: { active: false, duration: 0, maxDuration: 400 },
+            apocalypse: { active: false, duration: 0, maxDuration: 200 }
+        };
+
+        // YENİ BOSS'LAR
+        const BOSSES = {
+            INFERNO_DRAGON: {
+                name: '🔥 Ateş Ejderhası',
+                health: 1000,
+                color: '#ff3300',
+                attackPattern: 'fire',
+                speed: 1.5,
+                size: 150
+            },
+            DARK_LORD: {
+                name: '🌑 Karanlık Lordu', 
+                health: 1200,
+                color: '#990000',
+                attackPattern: 'shadow',
+                speed: 2,
+                size: 130
+            },
+            APOCALYPSE_BEAST: {
+                name: '💀 Kıyamet Canavarı',
+                health: 1500,
+                color: '#ff0066',
+                attackPattern: 'multi',
+                speed: 1,
+                size: 180
+            }
+        };
+
+        let activePowerUps = [];
+        let powerUpItems = [];
+        let explosions = [];
+
+        // Dil metinleri
+        const texts = {
+            English: {
+                start: '🚀 START GAME',
+                easy: 'EASY',
+                normal: 'NORMAL', 
+                hard: 'HARD',
+                extreme: 'EXTREME',
+                impossible: 'IMPOSSIBLE',
+                language: '🌐 LANGUAGE: ENGLISH',
+                lives: 'Lives: ',
+                score: 'Score: ',
+                gold: 'Gold: ',
+                pause: 'PAUSED',
+                powers: 'Powers: ',
+                boss: 'BOSS INCOMING!',
+                equip: 'EQUIP',
+                equipped: 'EQUIPPED',
+                modeDescriptions: {
+                    easy: 'Easy: Perfect for beginners',
+                    normal: 'Normal: Balanced challenge',
+                    hard: 'Hard: For experienced players', 
+                    extreme: 'Extreme: Only for experts',
+                    impossible: 'Impossible: Are you crazy?'
+                }
+            },
+            Turkish: {
+                start: '🚀 OYUNU BAŞLAT',
+                easy: 'KOLAY',
+                normal: 'NORMAL',
+                hard: 'ZOR', 
+                extreme: 'EKSTREM',
+                impossible: 'İMKANSIZ',
+                language: '🌐 DİL: TÜRKÇE',
+                lives: 'Can: ',
+                score: 'Skor: ',
+                gold: 'Altın: ',
+                pause: 'DURAKLATILDI',
+                powers: 'Güçler: ',
+                boss: 'BOSS GELİYOR!',
+                equip: 'KUŞAN',
+                equipped: 'KUŞANILDI',
+                modeDescriptions: {
+                    easy: 'Kolay: Yeni başlayanlar için ideal',
+                    normal: 'Normal: Dengeli zorluk',
+                    hard: 'Zor: Tecrübeli oyuncular için',
+                    extreme: 'Ekstrem: Sadece uzmanlar için',
+                    impossible: 'İmkansız: Deli misin?'
+                }
+            }
+        };
+
+        // YENİ: GEMİ AYARLARI - ULTIMATE METEOR 2 STİLİNDE
+        const ship = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            width: 45,
+            height: 30,
+            speed: 6,
+            health: 100,
+            maxHealth: 100,
+            color: '#ff4444',
+            moveLeft: false,
+            moveRight: false,
+            shield: false,
+            skinType: 'classic'
+        };
+
+        // OYUN MODU AYARLARI
+        const gameModeSettings = {
+            Easy: {
+                meteorSize: 20,
+                meteorSpeed: 2,
+                meteorHealth: 1,
+                spawnRate: 0.02,
+                powerUpRate: 0.01,
+                bossHealth: 500,
+                playerSpeed: 5,
+                lives: 3
+            },
+            Normal: {
+                meteorSize: 18,
+                meteorSpeed: 3,
+                meteorHealth: 1,
+                spawnRate: 0.025,
+                powerUpRate: 0.008,
+                bossHealth: 800,
+                playerSpeed: 6,
+                lives: 3
+            },
+            Hard: {
+                meteorSize: 16,
+                meteorSpeed: 4,
+                meteorHealth: 2,
+                spawnRate: 0.03,
+                powerUpRate: 0.006,
+                bossHealth: 1000,
+                playerSpeed: 6,
+                lives: 3
+            },
+            Extreme: {
+                meteorSize: 15,
+                meteorSpeed: 5,
+                meteorHealth: 2,
+                spawnRate: 0.035,
+                powerUpRate: 0.005,
+                bossHealth: 1200,
+                playerSpeed: 7,
+                lives: 3
+            },
+            Impossible: {
+                meteorSize: 12,
+                meteorSpeed: 7,
+                meteorHealth: 3,
+                spawnRate: 0.05,
+                powerUpRate: 0.003,
+                bossHealth: 1500,
+                playerSpeed: 8,
+                lives: 3
+            }
+        };
+
+        // Oyun nesneleri
+        let meteors = [];
+        let bullets = [];
+        let boss = null;
+
+        // YENİ: GEMİ ÇİZİM FONKSİYONU - ULTIMATE METEOR 2 STİLİNDE
+        function drawShip() {
+            const skin = shipSkins[currentShipSkin];
+            ctx.fillStyle = skin.color;
+            
+            switch(skin.type) {
+                case 'classic':
+                    // Klasik üçgen gemi
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'premium':
+                    // Premium - daha detaylı gemi
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y - ship.height/3);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y);
+                    ctx.lineTo(ship.x, ship.y + ship.height/3);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y - ship.height/3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'fire':
+                    // Ateş gemisi - keskin kanatlar
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y - ship.height/4);
+                    ctx.lineTo(ship.x - ship.width/3, ship.y);
+                    ctx.lineTo(ship.x, ship.y + ship.height/4);
+                    ctx.lineTo(ship.x + ship.width/3, ship.y);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y - ship.height/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'ice':
+                    // Buz gemisi - pürüzsüz hatlar
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2.5, ship.y - ship.height/4);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y);
+                    ctx.lineTo(ship.x, ship.y + ship.height/3);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y);
+                    ctx.lineTo(ship.x + ship.width/2.5, ship.y - ship.height/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'neon':
+                    // Neon avcı - agresif tasarım
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y - ship.height/2);
+                    ctx.lineTo(ship.x - ship.width/3, ship.y);
+                    ctx.lineTo(ship.x, ship.y + ship.height/2);
+                    ctx.lineTo(ship.x + ship.width/3, ship.y);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y - ship.height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'ghost':
+                    // Hayalet gemi - dalgalı form
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y - ship.height/3);
+                    ctx.quadraticCurveTo(ship.x - ship.width/3, ship.y, ship.x - ship.width/4, ship.y + ship.height/4);
+                    ctx.lineTo(ship.x, ship.y + ship.height/3);
+                    ctx.lineTo(ship.x + ship.width/4, ship.y + ship.height/4);
+                    ctx.quadraticCurveTo(ship.x + ship.width/3, ship.y, ship.x + ship.width/2, ship.y - ship.height/3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'cosmic':
+                    // Kozmik savaşçı - simetrik kanatlar
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, ship.y - ship.height);
+                    ctx.lineTo(ship.x - ship.width/2, ship.y - ship.height/4);
+                    ctx.lineTo(ship.x - ship.width/2.5, ship.y);
+                    ctx.lineTo(ship.x, ship.y + ship.height/4);
+                    ctx.lineTo(ship.x + ship.width/2.5, ship.y);
+                    ctx.lineTo(ship.x + ship.width/2, ship.y - ship.height/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Ekstra detay
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(ship.x, ship.y - ship.height/3, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+            }
+
+            // Motor ateşi
+            if (powerUps.rapidFire.active) {
+                ctx.fillStyle = skin.type === 'fire' ? '#ff6600' : '#ffff00';
+                ctx.beginPath();
+                ctx.moveTo(ship.x - 10, ship.y);
+                ctx.lineTo(ship.x, ship.y + 15);
+                ctx.lineTo(ship.x + 10, ship.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Kalkan efekti
+            if (ship.shield) {
+                ctx.strokeStyle = skin.type === 'ice' ? '#00ffff' : 
+                                skin.type === 'fire' ? '#ff6600' : 
+                                skin.type === 'neon' ? '#ff00ff' : '#ff4444';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(ship.x, ship.y - ship.height/2, ship.width, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        // YENİ: GEMİ ÖNİZLEME ÇİZİM FONKSİYONU
+        function drawShipPreview(skinKey, element) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 80;
+            canvas.height = 60;
+            const ctx = canvas.getContext('2d');
+            
+            const skin = shipSkins[skinKey];
+            const centerX = 40;
+            const centerY = 30;
+            const width = 30;
+            const height = 20;
+            
+            ctx.fillStyle = skin.color;
+            
+            switch(skin.type) {
+                case 'classic':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2, centerY);
+                    ctx.lineTo(centerX + width/2, centerY);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'premium':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2, centerY - height/3);
+                    ctx.lineTo(centerX - width/2, centerY);
+                    ctx.lineTo(centerX, centerY + height/3);
+                    ctx.lineTo(centerX + width/2, centerY);
+                    ctx.lineTo(centerX + width/2, centerY - height/3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'fire':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2, centerY - height/4);
+                    ctx.lineTo(centerX - width/3, centerY);
+                    ctx.lineTo(centerX, centerY + height/4);
+                    ctx.lineTo(centerX + width/3, centerY);
+                    ctx.lineTo(centerX + width/2, centerY - height/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'ice':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2.5, centerY - height/4);
+                    ctx.lineTo(centerX - width/2, centerY);
+                    ctx.lineTo(centerX, centerY + height/3);
+                    ctx.lineTo(centerX + width/2, centerY);
+                    ctx.lineTo(centerX + width/2.5, centerY - height/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'neon':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2, centerY - height/2);
+                    ctx.lineTo(centerX - width/3, centerY);
+                    ctx.lineTo(centerX, centerY + height/2);
+                    ctx.lineTo(centerX + width/3, centerY);
+                    ctx.lineTo(centerX + width/2, centerY - height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'ghost':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2, centerY - height/3);
+                    ctx.quadraticCurveTo(centerX - width/3, centerY, centerX - width/4, centerY + height/4);
+                    ctx.lineTo(centerX, centerY + height/3);
+                    ctx.lineTo(centerX + width/4, centerY + height/4);
+                    ctx.quadraticCurveTo(centerX + width/3, centerY, centerX + width/2, centerY - height/3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'cosmic':
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - height);
+                    ctx.lineTo(centerX - width/2, centerY - height/4);
+                    ctx.lineTo(centerX - width/2.5, centerY);
+                    ctx.lineTo(centerX, centerY + height/4);
+                    ctx.lineTo(centerX + width/2.5, centerY);
+                    ctx.lineTo(centerX + width/2, centerY - height/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY - height/3, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+            }
+            
+            element.innerHTML = '';
+            element.appendChild(canvas);
+        }
+
+        // DOKUNMATİK KONTROLLER
+        function setupTouchControls() {
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            const shootBtn = document.getElementById('shootBtn');
+
+            leftBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                ship.moveLeft = true;
+                ship.moveRight = false;
+            });
+
+            leftBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                ship.moveRight = true;
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                ship.moveRight = false;
+            });
+
+            shootBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (gameActive && !gamePaused) {
+                    shoot();
+                }
+            });
+
+            // Mouse events
+            leftBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                ship.moveLeft = true;
+                ship.moveRight = false;
+            });
+
+            leftBtn.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                ship.moveRight = true;
+                ship.moveLeft = false;
+            });
+
+            rightBtn.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                ship.moveRight = false;
+            });
+
+            shootBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                if (gameActive && !gamePaused) {
+                    shoot();
+                }
+            });
+        }
+
+        // YENİ METEOR OLUŞTURMA - KIRMIZI
+        function createMeteor() {
+            const settings = gameModeSettings[gameMode];
+            const meteorTypes = Object.keys(METEOR_TYPES);
+            const randomType = meteorTypes[Math.floor(Math.random() * meteorTypes.length)];
+            const type = METEOR_TYPES[randomType];
+            
+            // Meteor rengini mağazadan al
+            const meteorColor = meteorSkins[currentMeteorSkin].color;
+            
+            return {
+                x: Math.random() * canvas.width,
+                y: -30,
+                size: settings.meteorSize,
+                speed: settings.meteorSpeed,
+                health: type.health,
+                color: meteorColor,
+                type: randomType,
+                points: type.points,
+                effect: type.effect,
+                invisible: type.effect === 'invisible' ? Math.random() < 0.5 : false
+            };
+        }
+
+        // YENİ BOSS OLUŞTURMA
+        function createBoss() {
+            const settings = gameModeSettings[gameMode];
+            const bossKeys = Object.keys(BOSSES);
+            const randomBoss = bossKeys[Math.floor(Math.random() * bossKeys.length)];
+            const bossData = BOSSES[randomBoss];
+            
+            bossActive = true;
+            bossHealth = bossData.health;
+            bossMaxHealth = bossData.health;
+            currentBoss = randomBoss;
+            
+            // Boss health bar'ı göster
+            bossHealthBar.style.display = 'block';
+            bossName.style.display = 'block';
+            bossName.textContent = bossData.name;
+            updateBossHealthBar();
+            
+            return {
+                x: canvas.width / 2,
+                y: 100,
+                width: bossData.size,
+                height: bossData.size * 0.6,
+                speed: bossData.speed,
+                color: bossData.color,
+                attackPattern: bossData.attackPattern,
+                lastAttack: 0,
+                attackCooldown: 2000,
+                name: bossData.name
+            };
+        }
+
+        function updateBossHealthBar() {
+            const healthPercent = (bossHealth / bossMaxHealth) * 100;
+            const healthFill = bossHealthBar.querySelector('.boss-health-fill');
+            healthFill.style.width = healthPercent + '%';
+            
+            // Renk değişimi
+            if (healthPercent > 60) {
+                healthFill.style.background = 'linear-gradient(90deg, #ff0000, #ffff00)';
+            } else if (healthPercent > 30) {
+                healthFill.style.background = 'linear-gradient(90deg, #ffff00, #ff9900)';
+            } else {
+                healthFill.style.background = 'linear-gradient(90deg, #ff9900, #ff0000)';
+            }
+        }
+
+        // YENİ GÜÇ OLUŞTURMA
+        function createPowerUp() {
+            const settings = gameModeSettings[gameMode];
+            const powerTypes = ['shield', 'rapidFire', 'tripleShot', 'bomb', 'laser', 'timeFreeze', 'apocalypse'];
+            const type = powerTypes[Math.floor(Math.random() * powerTypes.length)];
+            
+            return {
+                x: Math.random() * (canvas.width - 30),
+                y: -20,
+                width: 25,
+                height: 25,
+                type: type,
+                color: getPowerUpColor(type),
+                speed: 2
+            };
+        }
+
+        function getPowerUpColor(type) {
+            const colors = {
+                shield: '#00ffff',
+                rapidFire: '#ffff00',
+                tripleShot: '#ff00ff',
+                bomb: '#ff4444',
+                laser: '#00ff00',
+                timeFreeze: '#8888ff',
+                apocalypse: '#ff0000'
+            };
+            return colors[type];
+        }
+
+        function getPowerUpSymbol(type) {
+            const symbols = {
+                shield: '🛡️',
+                rapidFire: '⚡',
+                tripleShot: '🔺',
+                bomb: '💣',
+                laser: '📡',
+                timeFreeze: '⏰',
+                apocalypse: '💀'
+            };
+            return symbols[type];
+        }
+
+        // ATEŞ ETME
+        function shoot() {
+            const baseDamage = 10;
+            
+            if (powerUps.tripleShot.active) {
+                bullets.push({x: ship.x - 15, y: ship.y - 40, vx: 0, vy: -12, color: '#ff00ff', damage: baseDamage * 2});
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: -12, color: '#ff00ff', damage: baseDamage * 2});
+                bullets.push({x: ship.x + 15, y: ship.y - 40, vx: 0, vy: -12, color: '#ff00ff', damage: baseDamage * 2});
+            } else if (powerUps.laser.active) {
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: -18, color: '#00ff00', width: 8, height: 25, damage: baseDamage * 3});
+            } else if (powerUps.apocalypse.active) {
+                // Kıyamet modu - çapraz ateş
+                bullets.push({x: ship.x - 10, y: ship.y - 40, vx: -1, vy: -14, color: '#ff0000', damage: baseDamage * 4});
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: -14, color: '#ff0000', damage: baseDamage * 4});
+                bullets.push({x: ship.x + 10, y: ship.y - 40, vx: 1, vy: -14, color: '#ff0000', damage: baseDamage * 4});
+            } else {
+                const bulletSpeed = powerUps.rapidFire.active ? -14 : -10;
+                bullets.push({x: ship.x, y: ship.y - 40, vx: 0, vy: bulletSpeed, color: '#ffff00', width: 5, height: 15, damage: baseDamage});
+            }
+        }
+
+        // PATLAMA EFEKTİ
+        function createExplosion(x, y, size, color) {
+            explosions.push({
+                x: x,
+                y: y,
+                size: size,
+                color: color,
+                life: 1.0,
+                maxLife: 1.0
+            });
+        }
+
+        function drawMeteors() {
+            meteors.forEach(meteor => {
+                // Görünmez meteor efekti
+                if (meteor.invisible && Math.sin(Date.now() / 200) > 0) {
+                    ctx.globalAlpha = 0.3;
+                } else {
+                    ctx.globalAlpha = 1.0;
+                }
+                
+                // METEOR RENGİ MAĞAZADAN GELİYOR
+                ctx.fillStyle = meteor.color;
+                ctx.beginPath();
+                ctx.arc(meteor.x, meteor.y, meteor.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lav meteor efekti
+                if (meteor.type === 'LAVA') {
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.beginPath();
+                    ctx.arc(meteor.x, meteor.y, meteor.size * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.globalAlpha = 1.0;
+            });
+        }
+
+        function drawBoss() {
+            if (!bossActive) return;
+
+            // Boss gövdesi
+            ctx.fillStyle = boss.color;
+            
+            // Boss tipine göre şekil
+            if (currentBoss === 'INFERNO_DRAGON') {
+                // Ejderha şekli
+                ctx.beginPath();
+                ctx.ellipse(boss.x, boss.y, boss.width/2, boss.height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ateş efekti
+                ctx.fillStyle = '#ff6600';
+                ctx.beginPath();
+                ctx.ellipse(boss.x, boss.y + boss.height/3, boss.width/3, boss.height/4, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+            } else if (currentBoss === 'DARK_LORD') {
+                // Karanlık lordu - üçgen form
+                ctx.beginPath();
+                ctx.moveTo(boss.x, boss.y - boss.height/2);
+                ctx.lineTo(boss.x - boss.width/2, boss.y + boss.height/2);
+                ctx.lineTo(boss.x + boss.width/2, boss.y + boss.height/2);
+                ctx.closePath();
+                ctx.fill();
+                
+            } else {
+                // Kıyamet canavarı - dikdörtgen
+                ctx.fillRect(boss.x - boss.width/2, boss.y - boss.height/2, boss.width, boss.height);
+            }
+        }
+
+        function drawPowerUps() {
+            powerUpItems.forEach(powerUp => {
+                ctx.fillStyle = powerUp.color;
+                ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(getPowerUpSymbol(powerUp.type), powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2 + 4);
+                ctx.textAlign = 'left';
+            });
+        }
+
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                ctx.fillStyle = bullet.color;
+                if (bullet.width && bullet.height) {
+                    ctx.fillRect(bullet.x - bullet.width/2, bullet.y, bullet.width, bullet.height);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function drawExplosions() {
+            explosions.forEach((explosion, index) => {
+                const progress = explosion.life / explosion.maxLife;
+                const size = explosion.size * (1 - progress);
+                
+                ctx.globalAlpha = progress;
+                ctx.fillStyle = explosion.color;
+                ctx.beginPath();
+                ctx.arc(explosion.x, explosion.y, size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.globalAlpha = 1.0;
+                
+                // Patlama ömrünü azalt
+                explosion.life -= 0.05;
+                if (explosion.life <= 0) {
+                    explosions.splice(index, 1);
+                }
+            });
+        }
+
+        function drawLives() {
+            const lang = texts[language];
+            livesDisplay.textContent = lang.lives + '❤️'.repeat(lives);
+        }
+
+        function drawScore() {
+            const lang = texts[language];
+            scoreDisplay.textContent = lang.score + score;
+        }
+
+        function drawGold() {
+            const lang = texts[language];
+            const goldText = lang.gold + gold;
+            goldDisplay.textContent = goldText;
+            menuGoldDisplay.textContent = goldText;
+            goldDisplayShop.textContent = goldText;
+        }
+
+        function drawPowerDisplay() {
+            const lang = texts[language];
+            let powerText = lang.powers;
+            
+            activePowerUps.forEach(power => {
+                powerText += getPowerUpSymbol(power) + ' ';
+            });
+            
+            powerDisplay.textContent = powerText;
+        }
+
+        // YENİ: 10 METEOR BONUS SİSTEMİ
+        function checkMeteorBonus() {
+            if (meteorsDestroyed > 0 && meteorsDestroyed % 10 === 0) {
+                gold += 10;
+                drawGold();
+                saveGameData();
+                
+                showBonusPopup();
+            }
+        }
+
+        function showBonusPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'bonus-popup';
+            popup.textContent = '+10 Altın! 🎉';
+            popup.style.left = ship.x + 'px';
+            popup.style.top = ship.y + 'px';
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                document.body.removeChild(popup);
+            }, 1500);
+        }
+
+        // KAYDETME SİSTEMİ - GÜNCELLENDİ
+        function saveGameData() {
+            const gameData = {
+                gold: gold,
+                currentShipSkin: currentShipSkin,
+                currentMeteorSkin: currentMeteorSkin,
+                shipSkins: {},
+                meteorSkins: {},
+                language: language,
+                gameMode: gameMode
+            };
+
+            Object.keys(shipSkins).forEach(key => {
+                gameData.shipSkins[key] = {
+                    unlocked: shipSkins[key].unlocked,
+                    equipped: shipSkins[key].equipped
+                };
+            });
+
+            Object.keys(meteorSkins).forEach(key => {
+                gameData.meteorSkins[key] = {
+                    unlocked: meteorSkins[key].unlocked,
+                    equipped: meteorSkins[key].equipped
+                };
+            });
+
+            localStorage.setItem('ultimateMeteorApocalypse', JSON.stringify(gameData));
+        }
+
+        function loadGameData() {
+            const savedData = localStorage.getItem('ultimateMeteorApocalypse');
+            if (savedData) {
+                try {
+                    const gameData = JSON.parse(savedData);
+                    
+                    gold = gameData.gold || 0;
+                    currentShipSkin = gameData.currentShipSkin || 'default';
+                    currentMeteorSkin = gameData.currentMeteorSkin || 'default';
+                    language = gameData.language || 'Turkish';
+                    gameMode = gameData.gameMode || 'Easy';
+                    
+                    if (gameData.shipSkins) {
+                        Object.keys(gameData.shipSkins).forEach(key => {
+                            if (shipSkins[key]) {
+                                shipSkins[key].unlocked = gameData.shipSkins[key].unlocked || false;
+                                shipSkins[key].equipped = gameData.shipSkins[key].equipped || false;
+                            }
+                        });
+                    }
+                    
+                    if (gameData.meteorSkins) {
+                        Object.keys(gameData.meteorSkins).forEach(key => {
+                            if (meteorSkins[key]) {
+                                meteorSkins[key].unlocked = gameData.meteorSkins[key].unlocked || false;
+                                meteorSkins[key].equipped = gameData.meteorSkins[key].equipped || false;
+                            }
+                        });
+                    }
+                    
+                    // Gemi rengini ve skin tipini güncelle
+                    ship.color = shipSkins[currentShipSkin].color;
+                    ship.skinType = shipSkins[currentShipSkin].type;
+                    
+                } catch (error) {
+                    console.error('Oyun verisi yüklenirken hata:', error);
+                }
+            }
+        }
+
+        // YENİ: GELİŞMİŞ MAĞAZA SİSTEMİ
+        function setupShop() {
+            const shopItems = document.getElementById('shopItems');
+            shopItems.innerHTML = '';
+
+            // Gemi Skinleri
+            const shipHeader = document.createElement('h3');
+            shipHeader.textContent = '🚀 UZAY GEMİSİ SKİNLERİ';
+            shipHeader.style.color = '#ff4444';
+            shipHeader.style.textAlign = 'center';
+            shipHeader.style.marginBottom = '1rem';
+            shopItems.appendChild(shipHeader);
+
+            Object.keys(shipSkins).forEach(skinKey => {
+                const skin = shipSkins[skinKey];
+                const item = document.createElement('div');
+                
+                let itemClass = 'shop-item';
+                if (skin.unlocked) itemClass += ' unlocked';
+                if (skin.equipped) itemClass += ' equipped';
+                
+                item.className = itemClass;
+                
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'skin-preview';
+                
+                item.innerHTML = `
+                    <h3>${skin.name}</h3>
+                    <div class="skin-preview" id="preview-${skinKey}"></div>
+                    ${!skin.unlocked ? `<div class="price-tag">Fiyat: ${skin.price} 💰</div>` : ''}
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.5rem;">
+                        ${!skin.unlocked ? 
+                            `<button onclick="buyItem('ship', '${skinKey}')" style="
+                                background: #ff4444;
+                                color: white;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-weight: bold;
+                            ">
+                                🛒 SATIN AL
+                            </button>` : 
+                            `<button onclick="equipItem('ship', '${skinKey}')" style="
+                                background: ${skin.equipped ? '#ffff00' : '#00ff00'};
+                                color: black;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-weight: bold;
+                            ">
+                                ${skin.equipped ? '✅ KUŞANILDI' : '⚡ KUŞAN'}
+                            </button>`
+                        }
+                    </div>
+                `;
+                shopItems.appendChild(item);
+                
+                // Önizleme çiz
+                setTimeout(() => {
+                    const previewElement = document.getElementById(`preview-${skinKey}`);
+                    if (previewElement) {
+                        drawShipPreview(skinKey, previewElement);
+                    }
+                }, 100);
+            });
+
+            // Meteor Skinleri
+            const meteorHeader = document.createElement('h3');
+            meteorHeader.textContent = '☄️ METEOR SKİNLERİ';
+            meteorHeader.style.color = '#ff4444';
+            meteorHeader.style.textAlign = 'center';
+            meteorHeader.style.marginTop = '2rem';
+            meteorHeader.style.marginBottom = '1rem';
+            shopItems.appendChild(meteorHeader);
+
+            Object.keys(meteorSkins).forEach(skinKey => {
+                const skin = meteorSkins[skinKey];
+                const item = document.createElement('div');
+                
+                let itemClass = 'shop-item';
+                if (skin.unlocked) itemClass += ' unlocked';
+                if (skin.equipped) itemClass += ' equipped';
+                
+                item.className = itemClass;
+                
+                item.innerHTML = `
+                    <h3>${skin.name}</h3>
+                    <div class="skin-preview">
+                        <div style="background: ${skin.color}; width: 40px; height: 40px; border-radius: 50%; margin: 0 auto;"></div>
+                    </div>
+                    ${!skin.unlocked ? `<div class="price-tag">Fiyat: ${skin.price} 💰</div>` : ''}
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.5rem;">
+                        ${!skin.unlocked ? 
+                            `<button onclick="buyItem('meteor', '${skinKey}')" style="
+                                background: #ff4444;
+                                color: white;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-weight: bold;
+                            ">
+                                🛒 SATIN AL
+                            </button>` : 
+                            `<button onclick="equipItem('meteor', '${skinKey}')" style="
+                                background: ${skin.equipped ? '#ffff00' : '#00ff00'};
+                                color: black;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-weight: bold;
+                            ">
+                                ${skin.equipped ? '✅ KUŞANILDI' : '⚡ KUŞAN'}
+                            </button>`
+                        }
+                    </div>
+                `;
+                shopItems.appendChild(item);
+            });
+        }
+
+        function buyItem(type, itemKey) {
+            const items = type === 'ship' ? shipSkins : meteorSkins;
+            const item = items[itemKey];
+            
+            if (gold >= item.price && !item.unlocked) {
+                gold -= item.price;
+                item.unlocked = true;
+                
+                drawGold();
+                setupShop();
+                saveGameData();
+                showPurchaseSuccess(item.name);
+            } else if (!item.unlocked) {
+                alert('Yeterli altın yok!');
+            }
+        }
+
+        // YENİ: SKİN KUŞANMA MEKANİZMASI
+        function equipItem(type, itemKey) {
+            const items = type === 'ship' ? shipSkins : meteorSkins;
+            const currentKey = type === 'ship' ? currentShipSkin : currentMeteorSkin;
+            
+            // Önceki skin'in equipped durumunu kaldır
+            if (items[currentKey]) {
+                items[currentKey].equipped = false;
+            }
+            
+            // Yeni skin'i equipped yap
+            items[itemKey].equipped = true;
+            
+            if (type === 'ship') {
+                currentShipSkin = itemKey;
+                ship.color = items[itemKey].color;
+                ship.skinType = items[itemKey].type;
+            } else {
+                currentMeteorSkin = itemKey;
+            }
+            
+            setupShop();
+            saveGameData();
+            
+            showEquipSuccess(items[itemKey].name);
+        }
+
+        function showPurchaseSuccess(message) {
+            alert(`✅ ${message} başarıyla satın alındı!`);
+        }
+
+        function showEquipSuccess(message) {
+            alert(`⚡ ${message} kuşanıldı!`);
+        }
+
+        // OYUN MODU SEÇİMİ
+        function setupGameModes() {
+            const modes = ['easy', 'normal', 'hard', 'extreme', 'impossible'];
+            
+            modes.forEach(mode => {
+                document.getElementById(mode + 'Mode').addEventListener('click', function() {
+                    gameMode = mode.charAt(0).toUpperCase() + mode.slice(1);
+                    
+                    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    updateModeDescription();
+                    
+                    saveGameData();
+                });
+            });
+        }
+
+        function updateModeDescription() {
+            const lang = texts[language];
+            modeDescription.textContent = lang.modeDescriptions[gameMode.toLowerCase()];
+        }
+
+        // Buton event listener'ları
+        document.getElementById('shopBtn').addEventListener('click', function() {
+            menu.style.display = 'none';
+            shopMenu.style.display = 'flex';
+            setupShop();
+        });
+
+        document.getElementById('backToMenuBtn').addEventListener('click', function() {
+            shopMenu.style.display = 'none';
+            menu.style.display = 'flex';
+        });
+
+        document.getElementById('shopBackBtn').addEventListener('click', function() {
+            shopMenu.style.display = 'none';
+            menu.style.display = 'flex';
+        });
+
+        document.getElementById('language-btn').addEventListener('click', function() {
+            language = language === 'English' ? 'Turkish' : 'English';
+            updateUI();
+            saveGameData();
+        });
+
+        // UI güncelleme
+        function updateUI() {
+            const lang = texts[language];
+            document.getElementById('startBtn').textContent = lang.start;
+            document.getElementById('easyMode').textContent = lang.easy;
+            document.getElementById('normalMode').textContent = lang.normal;
+            document.getElementById('hardMode').textContent = lang.hard;
+            document.getElementById('extremeMode').textContent = lang.extreme;
+            document.getElementById('impossibleMode').textContent = lang.impossible;
+            document.getElementById('language-btn').textContent = lang.language;
+            
+            updateModeDescription();
+            drawLives();
+            drawScore();
+            drawGold();
+            drawPowerDisplay();
+        }
+
+        // Oyun döngüsü
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawSpaceBackground();
+            drawStars();
+            updateStars();
+            
+            if (gameActive) {
+                updateGame();
+                drawMeteors();
+                drawPowerUps();
+                drawBullets();
+                drawBoss();
+                drawExplosions();
+                drawShip();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawSpaceBackground() {
+            // Karanlık kıyamet teması
+            ctx.fillStyle = '#110000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Kırmızı nebulalar
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
+            ctx.beginPath();
+            ctx.arc(canvas.width * 0.2, canvas.height * 0.3, 80, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255, 100, 0, 0.1)';
+            ctx.beginPath();
+            ctx.arc(canvas.width * 0.8, canvas.height * 0.2, 60, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            gamePaused = !gamePaused;
+            pauseBtn.textContent = gamePaused ? "▶" : "⏸";
+        }
+
+        function endGame() {
+            gameActive = false;
+            gamePaused = false;
+            menu.style.display = 'flex';
+            pauseBtn.style.display = 'none';
+            bossHealthBar.style.display = 'none';
+            bossName.style.display = 'none';
+            saveGameData();
+        }
+
+        // Oyun mantığı
+        function updateGame() {
+            if (gamePaused) return;
+            
+            // Zaman donması efekti
+            const timeScale = powerUps.timeFreeze.active ? 0.3 : 1.0;
+            
+            // Gemi hareketi
+            if (ship.moveLeft && ship.x - ship.width/2 > 0) {
+                ship.x -= ship.speed * timeScale;
+            }
+            if (ship.moveRight && ship.x + ship.width/2 < canvas.width) {
+                ship.x += ship.speed * timeScale;
+            }
+            
+            // Meteor hareketi ve çarpışma
+            meteors.forEach((meteor, index) => {
+                meteor.y += meteor.speed * timeScale;
+                
+                // Çarpışma kontrolü
+                if (Math.abs(meteor.x - ship.x) < meteor.size + ship.width/2 && 
+                    Math.abs(meteor.y - ship.y) < meteor.size + ship.height/2) {
+                    
+                    if (ship.shield) {
+                        ship.shield = false;
+                        createExplosion(meteor.x, meteor.y, meteor.size * 2, '#00ffff');
+                    } else {
+                        lives--;
+                        drawLives();
+                        createExplosion(ship.x, ship.y, 30, '#ff0000');
+                        if (lives <= 0) {
+                            endGame();
+                        }
+                    }
+                    meteors.splice(index, 1);
+                }
+                
+                // Mermi çarpışması
+                bullets.forEach((bullet, bIndex) => {
+                    if (Math.abs(meteor.x - bullet.x) < meteor.size + 3 && 
+                        Math.abs(meteor.y - bullet.y) < meteor.size + 8) {
+                        
+                        meteor.health -= bullet.damage || 10;
+                        bullets.splice(bIndex, 1);
+                        createExplosion(meteor.x, meteor.y, 15, meteor.color);
+                        
+                        if (meteor.health <= 0) {
+                            // Özel efektler
+                            if (meteor.effect === 'explosive') {
+                                createExplosion(meteor.x, meteor.y, meteor.size * 3, '#ff5500');
+                            }
+                            
+                            meteors.splice(index, 1);
+                            score += meteor.points;
+                            meteorsDestroyed++;
+                            gold += Math.floor(meteor.points / 5);
+                            
+                            // YENİ: 10 METEOR BONUS SİSTEMİ
+                            if (meteorsDestroyed % 10 === 0) {
+                                gold += 10;
+                                showBonusPopup();
+                            }
+                            
+                            drawScore();
+                            drawGold();
+                            saveGameData();
+                            checkMeteorBonus();
+                            
+                            // Boss spawn kontrolü
+                            if (meteorsDestroyed % 12 === 0 && !bossActive) {
+                                boss = createBoss();
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Boss hareketi ve saldırısı
+            if (bossActive) {
+                boss.x += Math.sin(Date.now() / 1000) * boss.speed * timeScale;
+                
+                // Boss saldırısı
+                if (Date.now() - boss.lastAttack > boss.attackCooldown * timeScale) {
+                    boss.lastAttack = Date.now();
+                    
+                    if (boss.attackPattern === 'fire') {
+                        // Ateş topu
+                        bullets.push({x: boss.x, y: boss.y + 40, vx: 0, vy: 6, color: '#ff6600', damage: 20});
+                    } else if (boss.attackPattern === 'shadow') {
+                        // Gölge saldırısı - çapraz
+                        bullets.push({x: boss.x - 20, y: boss.y + 40, vx: -1, vy: 5, color: '#990000', damage: 15});
+                        bullets.push({x: boss.x + 20, y: boss.y + 40, vx: 1, vy: 5, color: '#990000', damage: 15});
+                    } else {
+                        // Çoklu saldırı
+                        for (let i = 0; i < 3; i++) {
+                            bullets.push({
+                                x: boss.x - 30 + i * 30, 
+                                y: boss.y + 40, 
+                                vx: (i - 1) * 0.5, 
+                                vy: 6, 
+                                color: '#ff0066', 
+                                damage: 10
+                            });
+                        }
+                    }
+                }
+                
+                // Boss'a hasar
+                bullets.forEach((bullet, bIndex) => {
+                    if (bullet.vy < 0 && Math.abs(boss.x - bullet.x) < boss.width/2 && 
+                        Math.abs(boss.y - bullet.y) < boss.height/2) {
+                        
+                        bossHealth -= (bullet.damage || 10);
+                        bullets.splice(bIndex, 1);
+                        createExplosion(bullet.x, bullet.y, 20, boss.color);
+                        updateBossHealthBar();
+                        
+                        if (bossHealth <= 0) {
+                            bossActive = false;
+                            bossHealthBar.style.display = 'none';
+                            bossName.style.display = 'none';
+                            createExplosion(boss.x, boss.y, 100, boss.color);
+                            score += 500;
+                            gold += 50;
+                            drawScore();
+                            drawGold();
+                            saveGameData();
+                        }
+                    }
+                });
+            }
+            
+            // Güç yükseltme hareketi
+            powerUpItems.forEach((powerUp, index) => {
+                powerUp.y += powerUp.speed * timeScale;
+                
+                // Toplama kontrolü
+                if (Math.abs(powerUp.x - ship.x) < powerUp.width + ship.width/2 && 
+                    Math.abs(powerUp.y - ship.y) < powerUp.height + ship.height/2) {
+                    
+                    activatePowerUp(powerUp.type);
+                    powerUpItems.splice(index, 1);
+                    createExplosion(powerUp.x, powerUp.y, 20, powerUp.color);
+                }
+                
+                // Ekrandan çıkma
+                if (powerUp.y > canvas.height) {
+                    powerUpItems.splice(index, 1);
+                }
+            });
+            
+            // Güç yükseltme süreleri
+            updatePowerUpDurations();
+            
+            // Yeni meteor ekle
+            const settings = gameModeSettings[gameMode];
+            if (Math.random() < settings.spawnRate * timeScale) {
+                meteors.push(createMeteor());
+            }
+            
+            // Yeni güç yükseltme ekle
+            if (Math.random() < settings.powerUpRate * timeScale) {
+                powerUpItems.push(createPowerUp());
+            }
+            
+            // Mermi hareketi
+            bullets.forEach((bullet, index) => {
+                bullet.y += bullet.vy * timeScale;
+                bullet.x += bullet.vx * timeScale;
+                if (bullet.y < 0 || bullet.y > canvas.height || bullet.x < 0 || bullet.x > canvas.width) {
+                    bullets.splice(index, 1);
+                }
+            });
+        }
+
+        function activatePowerUp(type) {
+            powerUps[type].active = true;
+            powerUps[type].duration = powerUps[type].maxDuration;
+            
+            if (!activePowerUps.includes(type)) {
+                activePowerUps.push(type);
+            }
+            
+            if (type === 'shield') {
+                ship.shield = true;
+            }
+            
+            drawPowerDisplay();
+        }
+
+        function updatePowerUpDurations() {
+            activePowerUps.forEach((type, index) => {
+                powerUps[type].duration--;
+                
+                if (powerUps[type].duration <= 0) {
+                    powerUps[type].active = false;
+                    activePowerUps.splice(index, 1);
+                    
+                    if (type === 'shield') {
+                        ship.shield = false;
+                    }
+                }
+            });
+            drawPowerDisplay();
+        }
+
+        // Oyun başlatma
+        document.getElementById('startBtn').addEventListener('click', () => {
+            gameActive = true;
+            gamePaused = false;
+            score = 0;
+            meteorsDestroyed = 0;
+            
+            lives = 3;
+            
+            meteorsDestroyed = 0;
+            bossActive = false;
+            meteors = [];
+            bullets = [];
+            powerUpItems = [];
+            activePowerUps = [];
+            explosions = [];
+            
+            // Yıldızları oluştur
+            createStars();
+            
+            Object.keys(powerUps).forEach(key => {
+                powerUps[key].active = false;
+                powerUps[key].duration = 0;
+            });
+            
+            ship.shield = false;
+            menu.style.display = 'none';
+            pauseBtn.style.display = 'block';
+            pauseBtn.textContent = '⏸';
+            ship.x = canvas.width / 2;
+            
+            const settings = gameModeSettings[gameMode];
+            ship.speed = settings.playerSpeed;
+            
+            updateUI();
+        });
+
+        pauseBtn.addEventListener('click', togglePause);
+
+        // Başlangıç
+        loadGameData();
+        setupTouchControls();
+        setupGameModes();
+        setupShop();
+        updateUI();
+        createStars();
+        gameLoop();
+
+        // Global fonksiyonlar
+        window.buyItem = buyItem;
+        window.equipItem = equipItem;
+    </script>
+</body>
+</html>
